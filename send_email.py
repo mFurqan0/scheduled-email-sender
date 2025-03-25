@@ -1,23 +1,29 @@
 import os
 import smtplib
 from email.message import EmailMessage
+from dotenv import load_dotenv  # For local testing
 
-# Load credentials from environment variables
-EMAIL_ADDRESS = os.environ.get('EMAIL_USER')
-EMAIL_PASSWORD = os.environ.get('EMAIL_PASS')
-RECIPIENT_EMAIL = os.environ.get('RECIPIENT_EMAIL')
+# Load environment variables
+load_dotenv()  # Remove this line in production
+EMAIL_ADDRESS = os.getenv('EMAIL_USER')  # More reliable than os.environ.get
+EMAIL_PASSWORD = os.getenv('EMAIL_PASS')
+RECIPIENT_EMAIL = os.getenv('RECIPIENT_EMAIL')
 
 def send_email():
-    msg = EmailMessage()
-    msg['Subject'] = 'Automated Email from GitHub Actions'
-    msg['From'] = EMAIL_ADDRESS
-    msg['To'] = RECIPIENT_EMAIL
-    msg.set_content('This email was sent automatically every 20 minutes!')
+    try:
+        msg = EmailMessage()
+        msg['Subject'] = 'Test Email'
+        msg['From'] = EMAIL_ADDRESS
+        msg['To'] = RECIPIENT_EMAIL
+        msg.set_content('This is a test email')
 
-    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
-        smtp.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
-        smtp.send_message(msg)
-        print("Email sent successfully!")
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
+            smtp.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
+            smtp.send_message(msg)
+            print("Email sent successfully!")
+    except Exception as e:
+        print(f"Error sending email: {e}")
+        raise  # Re-raise for GitHub Actions to catch
 
 if __name__ == "__main__":
     send_email()
